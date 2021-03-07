@@ -1,0 +1,43 @@
+{
+    "chatting": {
+        "sad": [
+            {
+                "words": [
+                    "triste",
+                    "deprimido",
+                    "deprimida",
+                    "harto",
+                    "harta"
+                ],
+                "answers": [
+                    "¡Ánimo, no te rindas!",
+                    "¿Qué te ocurre?",
+                    "Eres buena persona"
+                ]
+            }
+        ],
+        "happy": [
+            {
+                "words": [
+                    "contenta", 
+                    "contento",
+                    "feliz",
+                    "alegria",
+                    "alivio",
+                    "felicidad"
+                ],
+                "answers": [
+                    "¡Me alegro por tí!",
+                    "¡Que bien!",
+                    "Enhorabuena por lo que sea que hayas conseguido, tu felicidad es la mía xD"
+                ]
+            }
+        ]
+    },
+    "basic settings": {
+        "botName": "Piobeast",
+        "enableThis_1": false,
+        "enableThis_2": true,
+        "enableThis_3": false
+    }
+}
