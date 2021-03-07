@@ -27,14 +27,18 @@ async def on_message(message):
     data = getAPI()
 
     chatting = data['chatting']
+    settings = data['basic settings']
     sad = chatting['sad'][0]
     happy = chatting['happy'][0]
     # sing = chatting['sing'][0]
 
     sing = ['canta', 'cantar', 'canta!', 'cantar!']
 
-    if message.content.startswith('$hola'):
+    if message.content.startswith('hola'):
         await message.channel.send('¡Hola!')
+
+    if message.content.startswith(settings['prefix']+ 'currentPrefix'):
+        await message.channel.send('El prefijo actual es **' + settings['prefix'] + '**, puedes cambiarlo con `' + settings['prefix'] + 'updatePrefix <prefix>`')
 
     if any(word in msg for word in sing):
         await message.channel.send('¡PRRRIIIIIIIII PIPIPIPI PIO PIO PIO PIO PI PI PI, PIIII PIIII PIIII!')

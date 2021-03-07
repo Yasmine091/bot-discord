@@ -36,6 +36,7 @@
     },
     "basic settings": {
         "botName": "Piobeast",
+        "prefix": "!",
         "enableThis_1": false,
         "enableThis_2": true,
         "enableThis_3": false
