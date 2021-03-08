@@ -1,9 +1,14 @@
 import discord
+from discord.ext import commands
 from decouple import config
 import random
 import requests
 import json
 import dotenv
+import functions
+bot = commands.Bot(command_prefix='>')
+
+#isOwner = functions.isAdmin()
 
 client = discord.Client()
 
@@ -37,8 +42,16 @@ async def on_message(message):
     if message.content.startswith('hola'):
         await message.channel.send('¡Hola!')
 
-    if message.content.startswith(settings['prefix']+ 'currentPrefix'):
-        await message.channel.send('El prefijo actual es **' + settings['prefix'] + '**, puedes cambiarlo con `' + settings['prefix'] + 'updatePrefix <prefix>`')
+    @bot.command()
+    @has_permissions(Administrator=True)
+    async def isAdmin(ctx):
+        if message.content.startswith(settings['prefix']+ 'currentPrefix'):
+            await message.channel.send('El prefijo actual es **' + settings['prefix'] + '**, puedes cambiarlo con `' + settings['prefix'] + 'updatePrefix <prefix>`')
+
+    @isAdmin.error
+    async def admin_error(error, ctx):
+        await ctx.send("You don't have permission to do that!")
+
 
     if any(word in msg for word in sing):
         await message.channel.send('¡PRRRIIIIIIIII PIPIPIPI PIO PIO PIO PIO PI PI PI, PIIII PIIII PIIII!')
