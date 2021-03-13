@@ -56,7 +56,7 @@ async def on_message(message):
     await client.process_commands(message)
 
 @client.command()
-#@has_permissions(ADMINISTRATOR=True) 
+@has_permissions(administrator=True)
 async def currentPrefix(ctx):
     await ctx.send('El prefijo actual es **' + settings['prefix'] + '**, puedes cambiarlo con `' + settings['prefix'] + 'updatePrefix <prefix>`')
 
