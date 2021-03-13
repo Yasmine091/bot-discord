@@ -1,16 +1,31 @@
 import discord
 from discord.ext import commands
+from discord.ext.commands import has_permissions, CheckFailure
+from discord.utils import get
+from discord import NotFound
 from decouple import config
 import random
 import requests
 import json
 import dotenv
-import functions
-bot = commands.Bot(command_prefix='>')
+#import functions
 
-#isOwner = functions.isAdmin()
+def getAPI():
+    response = requests.get(config('API_URL'))
+    json_data = json.loads(response.text)
+    return(json_data)
 
-client = discord.Client()
+data = getAPI()
+
+chatting = data['chatting']
+settings = data['basic settings']
+sad = chatting['sad'][0]
+happy = chatting['happy'][0]
+# sing = chatting['sing'][0]
+
+sing = ['canta', 'cantar', 'canta!', 'cantar!']
+
+client = commands.Bot(command_prefix = settings['prefix'])
 
 @client.event
 async def on_ready():
@@ -18,41 +33,17 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+    usr = message.author
+    msg = message.content
+
+    print('{}: {}'.format(usr, msg))
+
     if message.author == client.user:
         return
 
-
-
-    msg = message.content
-    def getAPI():
-        response = requests.get(config('API_URL'))
-        json_data = json.loads(response.text)
-        return(json_data)
-
-    data = getAPI()
-
-    chatting = data['chatting']
-    settings = data['basic settings']
-    sad = chatting['sad'][0]
-    happy = chatting['happy'][0]
-    # sing = chatting['sing'][0]
-
-    sing = ['canta', 'cantar', 'canta!', 'cantar!']
-
     if message.content.startswith('hola'):
         await message.channel.send('¡Hola!')
-
-    @bot.command()
-    @has_permissions(Administrator=True)
-    async def isAdmin(ctx):
-        if message.content.startswith(settings['prefix']+ 'currentPrefix'):
-            await message.channel.send('El prefijo actual es **' + settings['prefix'] + '**, puedes cambiarlo con `' + settings['prefix'] + 'updatePrefix <prefix>`')
-
-    @isAdmin.error
-    async def admin_error(error, ctx):
-        await ctx.send("You don't have permission to do that!")
-
-
+    
     if any(word in msg for word in sing):
         await message.channel.send('¡PRRRIIIIIIIII PIPIPIPI PIO PIO PIO PIO PI PI PI, PIIII PIIII PIIII!')
     
@@ -61,6 +52,13 @@ async def on_message(message):
 
     if any(word in msg for word in happy['words']):
         await message.channel.send(random.choice(happy['answers']))
+
+    await client.process_commands(message)
+
+@client.command()
+#@has_permissions(ADMINISTRATOR=True) 
+async def currentPrefix(ctx):
+    await ctx.send('El prefijo actual es **' + settings['prefix'] + '**, puedes cambiarlo con `' + settings['prefix'] + 'updatePrefix <prefix>`')
 
 
 client.run(config('TOKEN'))
