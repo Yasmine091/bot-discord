@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from discord.ext.commands import has_permissions, CheckFailure
+from discord.ext.commands import has_permissions, CheckFailure, MissingPermissions
 from discord.utils import get
 from discord import NotFound
 from decouple import config
@@ -11,8 +11,8 @@ import dotenv
 #import functions
 
 def getAPI():
-    response = requests.get(config('API_URL'))
-    json_data = json.loads(response.text)
+    with open("assets/api.json", encoding="utf8") as f:
+        json_data = json.load(f)
     return(json_data)
 
 data = getAPI()
@@ -25,6 +25,8 @@ happy = chatting['happy'][0]
 
 sing = ['canta', 'cantar', 'canta!', 'cantar!']
 
+notAllowed = 'No tienes permiso para usar ese comando.'
+
 client = commands.Bot(command_prefix = settings['prefix'])
 
 @client.event
@@ -36,7 +38,7 @@ async def on_message(message):
     usr = message.author
     msg = message.content
 
-    print('{}: {}'.format(usr, msg))
+    #print('{}: {}'.format(usr, msg))
 
     if message.author == client.user:
         return
@@ -55,10 +57,35 @@ async def on_message(message):
 
     await client.process_commands(message)
 
+
+# Admin commands
 @client.command()
 @has_permissions(administrator=True)
 async def currentPrefix(ctx):
     await ctx.send('El prefijo actual es **' + settings['prefix'] + '**, puedes cambiarlo con `' + settings['prefix'] + 'updatePrefix <prefix>`')
+
+@currentPrefix.error
+async def noAdmin(ctx, error):
+    if isinstance(error, MissingPermissions):
+        await ctx.send(notAllowed)
+    
+@client.command()
+@has_permissions(administrator=True)
+async def updatePrefix(ctx, newPrefix):
+    with open("assets/api.json", encoding="utf8") as rf:
+        gtdata = json.load(rf)
+
+    gtdata['basic settings']['prefix'] = newPrefix
+
+    with open("assets/api.json", 'w') as wf:
+        json.dump(gtdata, wf, indent=3)
+
+    await ctx.send('Se ha actualizado el prefijo, ahora es **' + settings['prefix'] + '**, puedes cambiarlo con `' + settings['prefix'] + 'updatePrefix <prefix>`')
+
+@updatePrefix.error
+async def noAdmin(ctx, error):
+    if isinstance(error, MissingPermissions):
+        await ctx.send(notAllowed)
 
 
 client.run(config('TOKEN'))

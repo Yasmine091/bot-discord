@@ -1,44 +1,44 @@
 {
-    "chatting": {
-        "sad": [
-            {
-                "words": [
-                    "triste",
-                    "deprimido",
-                    "deprimida",
-                    "harto",
-                    "harta"
-                ],
-                "answers": [
-                    "¡Ánimo, no te rindas!",
-                    "¿Qué te ocurre?",
-                    "Eres buena persona"
-                ]
-            }
-        ],
-        "happy": [
-            {
-                "words": [
-                    "contenta", 
-                    "contento",
-                    "feliz",
-                    "alegria",
-                    "alivio",
-                    "felicidad"
-                ],
-                "answers": [
-                    "¡Me alegro por tí!",
-                    "¡Que bien!",
-                    "Enhorabuena por lo que sea que hayas conseguido, tu felicidad es la mía xD"
-                ]
-            }
-        ]
-    },
-    "basic settings": {
-        "botName": "Piobeast",
-        "prefix": "!",
-        "enableThis_1": false,
-        "enableThis_2": true,
-        "enableThis_3": false
-    }
+   "chatting": {
+      "sad": [
+         {
+            "words": [
+               "triste",
+               "deprimido",
+               "deprimida",
+               "harto",
+               "harta"
+            ],
+            "answers": [
+               "\u00a1\u00c1nimo, no te rindas!",
+               "\u00bfQu\u00e9 te ocurre?",
+               "Eres buena persona"
+            ]
+         }
+      ],
+      "happy": [
+         {
+            "words": [
+               "contenta",
+               "contento",
+               "feliz",
+               "alegria",
+               "alivio",
+               "felicidad"
+            ],
+            "answers": [
+               "\u00a1Me alegro por t\u00ed!",
+               "\u00a1Que bien!",
+               "Enhorabuena por lo que sea que hayas conseguido, tu felicidad es la m\u00eda xD"
+            ]
+         }
+      ]
+   },
+   "basic settings": {
+      "botName": "Piobeast",
+      "prefix": "!",
+      "enableThis_1": false,
+      "enableThis_2": true,
+      "enableThis_3": false
+   }
 }
