@@ -1,21 +1,21 @@
 import discord
 from discord.ext import commands
 from discord.ext.commands import has_permissions, CheckFailure, MissingPermissions
+from discord.ext.commands.core import command
 from discord.utils import get
 from discord import NotFound
 from decouple import config
 import random
-import requests
 import json
-import dotenv
-#import functions
+import functions
 
 def getAPI():
     with open("assets/api.json", encoding="utf8") as f:
-        json_data = json.load(f)
-    return(json_data)
+        global data
+        data = json.load(f)
+        return (data)
 
-data = getAPI()
+getAPI()
 
 chatting = data['chatting']
 settings = data['basic settings']
@@ -72,14 +72,13 @@ async def noAdmin(ctx, error):
 @client.command()
 @has_permissions(administrator=True)
 async def updatePrefix(ctx, newPrefix):
-    with open("assets/api.json", encoding="utf8") as rf:
-        gtdata = json.load(rf)
 
-    gtdata['basic settings']['prefix'] = newPrefix
+    data['basic settings']['prefix'] = newPrefix
 
     with open("assets/api.json", 'w') as wf:
-        json.dump(gtdata, wf, indent=3)
+        json.dump(data, wf, indent=3)
 
+    client.command_prefix = newPrefix
     await ctx.send('Se ha actualizado el prefijo, ahora es **' + settings['prefix'] + '**, puedes cambiarlo con `' + settings['prefix'] + 'updatePrefix <prefix>`')
 
 @updatePrefix.error
