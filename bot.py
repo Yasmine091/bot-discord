@@ -87,4 +87,37 @@ async def noAdmin(ctx, error):
         await ctx.send(notAllowed)
 
 
+@client.command()
+@has_permissions(administrator=True)
+async def addWord(ctx, list, word):
+
+    data['chatting'][list][0]['words'].append(word)
+
+    with open("assets/api.json", 'w') as wf:
+        json.dump(data, wf, indent=3)
+
+    await ctx.send('Se ha añadido la palabra **' + word + '** a la lista `' + list + '`.')
+
+@updatePrefix.error
+async def noAdmin(ctx, error):
+    if isinstance(error, MissingPermissions):
+        await ctx.send(notAllowed)
+
+@client.command()
+@has_permissions(administrator=True)
+async def addAnswer(ctx, list, answer):
+
+    data['chatting'][list][0]['answers'].append(answer)
+
+    with open("assets/api.json", 'w') as wf:
+        json.dump(data, wf, indent=3)
+
+    await ctx.send('Se ha añadido la frase **' + answer + '** a la lista `' + list + '`.')
+
+@updatePrefix.error
+async def noAdmin(ctx, error):
+    if isinstance(error, MissingPermissions):
+        await ctx.send(notAllowed)
+
+
 client.run(config('TOKEN'))
