@@ -86,7 +86,6 @@ async def noAdmin(ctx, error):
     if isinstance(error, MissingPermissions):
         await ctx.send(notAllowed)
 
-
 @client.command()
 @has_permissions(administrator=True)
 async def addWord(ctx, list, word):
@@ -96,9 +95,9 @@ async def addWord(ctx, list, word):
     with open("assets/api.json", 'w') as wf:
         json.dump(data, wf, indent=3)
 
-    await ctx.send('Se ha añadido la palabra **' + word + '** a la lista `' + list + '`.')
+    await ctx.send('Se ha añadido la palabra **' + word + '** a la lista **' + list + '**.')
 
-@updatePrefix.error
+@addWord.error
 async def noAdmin(ctx, error):
     if isinstance(error, MissingPermissions):
         await ctx.send(notAllowed)
@@ -112,9 +111,41 @@ async def addAnswer(ctx, list, answer):
     with open("assets/api.json", 'w') as wf:
         json.dump(data, wf, indent=3)
 
-    await ctx.send('Se ha añadido la frase **' + answer + '** a la lista `' + list + '`.')
+    await ctx.send('Se ha añadido la frase **' + answer + '** a la lista **' + list + '**.')
 
-@updatePrefix.error
+@addAnswer.error
+async def noAdmin(ctx, error):
+    if isinstance(error, MissingPermissions):
+        await ctx.send(notAllowed)
+
+@client.command()
+@has_permissions(administrator=True)
+async def deleteWord(ctx, list, word):
+
+    data['chatting'][list][0]['words'].remove(word)
+
+    with open("assets/api.json", 'w') as wf:
+        json.dump(data, wf, indent=3)
+
+    await ctx.send('Se ha eliminado la palabra **' + word + '** de la lista **' + list + '**.')
+
+@deleteWord.error
+async def noAdmin(ctx, error):
+    if isinstance(error, MissingPermissions):
+        await ctx.send(notAllowed)
+
+@client.command()
+@has_permissions(administrator=True)
+async def deleteAnswer(ctx, list, answer):
+
+    data['chatting'][list][0]['answers'].remove(answer)
+
+    with open("assets/api.json", 'w') as wf:
+        json.dump(data, wf, indent=3)
+
+    await ctx.send('Se ha eliminado la frase **' + answer + '** de la lista **' + list + '**.')
+
+@deleteAnswer.error
 async def noAdmin(ctx, error):
     if isinstance(error, MissingPermissions):
         await ctx.send(notAllowed)
