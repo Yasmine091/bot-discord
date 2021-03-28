@@ -58,6 +58,27 @@ async def on_message(message):
     await client.process_commands(message)
 
 
+@client.command()
+@has_permissions(administrator=True)
+async def commands(ctx):
+    embedVar = discord.Embed(title="Lista de comandos", description="Lista de comandos de **{0.user}".format(client) + "**", color=0x00ff00)
+    embedVar.add_field(name='\u200B', value='\u200B', inline=False)
+    embedVar.add_field(name='!currentPrefix', value='Ver el prefijo actual', inline=False)
+    embedVar.add_field(name='!updatePrefix <prefix>', value='Cambiar el prefijo actual', inline=False)
+    embedVar.add_field(name='!addWord <list> <word>', value='Añadir palabras a una lista', inline=False)
+    embedVar.add_field(name='!addAnswer <list> <answer>', value='Añadir frases a una lista', inline=False)
+    embedVar.add_field(name='!deleteWord <list> <word>', value='Eliminar palabras de una lista', inline=False)
+    embedVar.add_field(name='!deleteAnswer <list> <answer>', value='Eliminar frases de una lista', inline=False)
+    embedVar.add_field(name='!wordsList <list>', value='Ver la lista completa de palabras', inline=False)
+    embedVar.add_field(name='!answersList <list>', value='Ver la lista completa de frases', inline=False)
+    
+    await ctx.send(embed=embedVar)
+
+@commands.error
+async def noAdmin(ctx, error):
+    if isinstance(error, MissingPermissions):
+        await ctx.send(notAllowed)
+
 # Admin commands
 @client.command()
 @has_permissions(administrator=True)
@@ -150,5 +171,36 @@ async def noAdmin(ctx, error):
     if isinstance(error, MissingPermissions):
         await ctx.send(notAllowed)
 
+@client.command()
+@has_permissions(administrator=True)
+async def wordsList(ctx, list):
+    embedVar = discord.Embed(title="Lista : **" + list + "**", description="Lista de palabras del grupo **" + list + "**", color=0x00ff00)
+    embedVar.add_field(name='\u200B', value='\u200B', inline=False)
+
+    for word in data['chatting'][list][0]['words']:
+        embedVar.add_field(name=word, value='\u200B', inline=True)
+
+    await ctx.send(embed=embedVar)
+
+@wordsList.error
+async def noAdmin(ctx, error):
+    if isinstance(error, MissingPermissions):
+        await ctx.send(notAllowed)
+
+@client.command()
+@has_permissions(administrator=True)
+async def answersList(ctx, list):
+    embedVar = discord.Embed(title="Lista : **" + list + "**", description="Lista de frases del grupo **" + list + "**", color=0x00ff00)
+    embedVar.add_field(name='\u200B', value='\u200B', inline=False)
+
+    for word in data['chatting'][list][0]['answers']:
+        embedVar.add_field(name=word, value='\u200B', inline=False)
+
+    await ctx.send(embed=embedVar)
+
+@answersList.error
+async def noAdmin(ctx, error):
+    if isinstance(error, MissingPermissions):
+        await ctx.send(notAllowed)
 
 client.run(config('TOKEN'))
