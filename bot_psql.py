@@ -1,4 +1,3 @@
-from logging import DEBUG
 import discord
 from discord.ext import commands
 from discord.ext.commands import has_permissions, CheckFailure, MissingPermissions
@@ -9,9 +8,7 @@ from decouple import config
 import random
 import json
 import functions
-# import sqlite3
-# conn = sqlite3.connect("assets/cuacker.db")
-# sql = conn.cursor()
+
 import asyncio
 import asyncpg
 
@@ -78,6 +75,11 @@ async def on_ready():
 
 async def bot_run():
     await connDB()
+    
+    @client.event
+    async def on_ready():
+        print('Hola, soy {0.user}'.format(client))
+
     @client.event
     async def on_message(message):
 
@@ -87,7 +89,6 @@ async def bot_run():
             print("Settings missing!")
             await getData(message)
             print('Settings loaded!')
-
 
         usr = message.author
         msg = message.content
@@ -101,35 +102,43 @@ async def bot_run():
             await message.channel.send('¡Hola!')
         
         if any(word in msg for word in sing_w):
-            # req = ('INSERT INTO "singing" ("answer") VALUES (?)')
-            # test = (message.guild.id, )
-            # sql.execute(req, test)
-            # conn.commit()
-
-            #await db.execute("CREATE TABLE IF NOT EXISTS sing (id bigint PRIMARY KEY, answer text);")
-            #req = ('INSERT INTO "sing"("answer") VALUES($1)')
-            #await db.execute('INSERT INTO "sing"("answer") VALUES($1)', str(message.guild.name))
-            #test = (message.guild.id, )
-            #await db.execute(req, test)
-
             await message.channel.send('¡PRRRIIIIIIIII PIPIPIPI PIO PIO PIO PIO PI PI PI, PIIII PIIII PIIII!')
         
-        if any(word in msg for word in sad_w):
-            # print(sad_w)
-            # print(sad_a)
-            await message.channel.send(random.choice(sad_a['answer']))
+        if any(word in msg for word in sad_w['words']):
+            await message.channel.send(random.choice(sad_a['answers']))
 
-        if any(word in msg for word in happy_w):
-            await message.channel.send(random.choice(happy_a['answer']))
+        if any(word in msg for word in happy_w['words']):
+            await message.channel.send(random.choice(happy_a['answers']))
 
         await client.process_commands(message)
 
+
+    @client.command()
+    @has_permissions(administrator=True)
+    async def commands(ctx):
+        embedVar = discord.Embed(title="Lista de comandos", description="Lista de comandos de **{0.user}".format(client) + "**", color=0xfde435)
+        embedVar.add_field(name='\u200B', value='\u200B', inline=False)
+        embedVar.add_field(name=settings['prefix'] + 'currentPrefix', value='Ver el prefijo actual', inline=True)
+        embedVar.add_field(name=settings['prefix'] + 'updatePrefix <prefix>', value='Cambiar el prefijo actual', inline=True)
+        embedVar.add_field(name=settings['prefix'] + 'addWord <list> <word>', value='Añadir palabras a una lista', inline=True)
+        embedVar.add_field(name=settings['prefix'] + 'addAnswer <list> <answer>', value='Añadir frases a una lista', inline=True)
+        embedVar.add_field(name=settings['prefix'] + 'deleteWord <list> <word>', value='Eliminar palabras de una lista', inline=True)
+        embedVar.add_field(name=settings['prefix'] + 'deleteAnswer <list> <answer>', value='Eliminar frases de una lista', inline=True)
+        embedVar.add_field(name=settings['prefix'] + 'words <list>', value='Ver la lista completa de palabras', inline=True)
+        embedVar.add_field(name=settings['prefix'] + 'answers <list>', value='Ver la lista completa de frases', inline=True)
+        
+        await ctx.send(embed=embedVar)
+
+    @commands.error
+    async def noAdmin(ctx, error):
+        if isinstance(error, MissingPermissions):
+            await ctx.send(notAllowed)
 
     # Admin commands
     @client.command()
     @has_permissions(administrator=True)
     async def currentPrefix(ctx):
-        await ctx.send('El prefijo actual es **' + settings[0]['bot_prefix'] + '**, puedes cambiarlo con `' + settings[0]['bot_prefix'] + 'updatePrefix <prefix>`')
+        await ctx.send('El prefijo actual es **' + settings['prefix'] + '**, puedes cambiarlo con `' + settings['prefix'] + 'updatePrefix <prefix>`')
 
     @currentPrefix.error
     async def noAdmin(ctx, error):
@@ -210,5 +219,38 @@ async def bot_run():
         if isinstance(error, MissingPermissions):
             await ctx.send(notAllowed)
 
+    @client.command()
+    @has_permissions(administrator=True)
+    async def words(ctx, list):
+        embedVar = discord.Embed(title="Diccionario **" + list + "**", description="\u200B", color=0xfde435)
+
+        i = 1;
+        for word in data['chatting'][list][0]['words']:
+            embedVar.add_field(name='Palabra #{}'.format(i), value=word, inline=True)
+            i = i + 1;
+
+        await ctx.send(embed=embedVar)
+
+    @words.error
+    async def noAdmin(ctx, error):
+        if isinstance(error, MissingPermissions):
+            await ctx.send(notAllowed)
+
+    @client.command()
+    @has_permissions(administrator=True)
+    async def answers(ctx, list):
+        embedVar = discord.Embed(title="Repertorio **" + list + "**", description="\u200B", color=0xfde435)
+
+        i = 1;
+        for answer in data['chatting'][list][0]['answers']:
+            embedVar.add_field(name='Frase #{}'.format(i), value=answer, inline=False)
+            i = i + 1;
+
+        await ctx.send(embed=embedVar)
+
+    @answers.error
+    async def noAdmin(ctx, error):
+        if isinstance(error, MissingPermissions):
+            await ctx.send(notAllowed)
 
 client.run(config('TOKEN'))
