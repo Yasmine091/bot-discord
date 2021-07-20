@@ -58,6 +58,27 @@ async def on_message(message):
     await client.process_commands(message)
 
 
+@client.command()
+@has_permissions(administrator=True)
+async def commands(ctx):
+    embedVar = discord.Embed(title="Lista de comandos", description="Lista de comandos de **{0.user}".format(client) + "**", color=0xfde435)
+    embedVar.add_field(name='\u200B', value='\u200B', inline=False)
+    embedVar.add_field(name=settings['prefix'] + 'currentPrefix', value='Ver el prefijo actual', inline=True)
+    embedVar.add_field(name=settings['prefix'] + 'updatePrefix <prefix>', value='Cambiar el prefijo actual', inline=True)
+    embedVar.add_field(name=settings['prefix'] + 'addWord <list> <word>', value='Añadir palabras a una lista', inline=True)
+    embedVar.add_field(name=settings['prefix'] + 'addAnswer <list> <answer>', value='Añadir frases a una lista', inline=True)
+    embedVar.add_field(name=settings['prefix'] + 'deleteWord <list> <word>', value='Eliminar palabras de una lista', inline=True)
+    embedVar.add_field(name=settings['prefix'] + 'deleteAnswer <list> <answer>', value='Eliminar frases de una lista', inline=True)
+    embedVar.add_field(name=settings['prefix'] + 'words <list>', value='Ver la lista completa de palabras', inline=True)
+    embedVar.add_field(name=settings['prefix'] + 'answers <list>', value='Ver la lista completa de frases', inline=True)
+    
+    await ctx.send(embed=embedVar)
+
+@commands.error
+async def noAdmin(ctx, error):
+    if isinstance(error, MissingPermissions):
+        await ctx.send(notAllowed)
+
 # Admin commands
 @client.command()
 @has_permissions(administrator=True)
@@ -150,5 +171,38 @@ async def noAdmin(ctx, error):
     if isinstance(error, MissingPermissions):
         await ctx.send(notAllowed)
 
+@client.command()
+@has_permissions(administrator=True)
+async def words(ctx, list):
+    embedVar = discord.Embed(title="Diccionario **" + list + "**", description="\u200B", color=0xfde435)
+
+    i = 1;
+    for word in data['chatting'][list][0]['words']:
+        embedVar.add_field(name='Palabra #{}'.format(i), value=word, inline=True)
+        i = i + 1;
+
+    await ctx.send(embed=embedVar)
+
+@words.error
+async def noAdmin(ctx, error):
+    if isinstance(error, MissingPermissions):
+        await ctx.send(notAllowed)
+
+@client.command()
+@has_permissions(administrator=True)
+async def answers(ctx, list):
+    embedVar = discord.Embed(title="Repertorio **" + list + "**", description="\u200B", color=0xfde435)
+
+    i = 1;
+    for answer in data['chatting'][list][0]['answers']:
+        embedVar.add_field(name='Frase #{}'.format(i), value=answer, inline=False)
+        i = i + 1;
+
+    await ctx.send(embed=embedVar)
+
+@answers.error
+async def noAdmin(ctx, error):
+    if isinstance(error, MissingPermissions):
+        await ctx.send(notAllowed)
 
 client.run(config('TOKEN'))

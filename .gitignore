@@ -1,2 +1,5 @@
 .env
 __pycache__
+assets/cuacker
+assets/cuacker.db
+assets/cuacker.db.sqbpro
