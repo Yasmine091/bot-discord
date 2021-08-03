@@ -22,18 +22,18 @@ async def connDB():
     return (db)
 
 async def getWords(type, message):
-    words = await db.fetch('SELECT * FROM chatting_words WHERE server_id = $1 AND type = $2', int(message.guild.id), str(type))
+    words = await db.fetch('SELECT * FROM "public"."chatting_words" WHERE server_id = $1 AND type = $2', int(message.guild.id), str(type))
     #print(words)
     return (words)
 
 async def getAnswers(type, message):
-    answers = await db.fetch('SELECT * FROM chatting_answers WHERE server_id = $1 AND type = $2', int(message.guild.id), str(type))
+    answers = await db.fetch('SELECT * FROM "public"."chatting_answers" WHERE server_id = $1 AND type = $2', int(message.guild.id), str(type))
     #print(answers)
     return (answers)
 
 async def formatWords(type, message):
     words = []
-    r_words = await db.fetch('SELECT * FROM chatting_words WHERE server_id = $1 AND type = $2', int(message.guild.id), str(type))
+    r_words = await db.fetch('SELECT * FROM "public"."chatting_words" WHERE server_id = $1 AND type = $2', int(message.guild.id), str(type))
     for word in r_words:
         words.append(word['word'])
     #print(words)
@@ -41,27 +41,27 @@ async def formatWords(type, message):
 
 async def formatAnswers(type, message):
     answers = []
-    r_answers = await db.fetch('SELECT * FROM chatting_answers WHERE server_id = $1 AND type = $2', int(message.guild.id), str(type))
+    r_answers = await db.fetch('SELECT * FROM "public"."chatting_answers" WHERE server_id = $1 AND type = $2', int(message.guild.id), str(type))
     for answer in r_answers:
         answers.append(answer['answer'])
     #print(answers)
     return (answers)
 
 async def getSettings(message):
-    settings = await db.fetch('SELECT * FROM settings WHERE server_id = $1', message.guild.id)
+    settings = await db.fetch('SELECT * FROM "public"."settings" WHERE server_id = $1', message.guild.id)
     client.command_prefix = settings[0]['bot_prefix']
     if(settings == 'SELECT 0'):
         await db.execute('INSERT INTO settings (server_id) VALUES ($1)', message.guild.id)
-        settings = await db.fetch('SELECT * FROM settings WHERE server_id = $1', message.guild.id)
+        settings = await db.fetch('SELECT * FROM "public"."settings" WHERE server_id = $1', message.guild.id)
         client.command_prefix = settings[0]['bot_prefix']
     return (settings)
 
 async def setWords(type, message):
-    words = await db.execute('SELECT * FROM chatting_words WHERE server_id = $1 AND type = $2', int(message.guild.id), str(type))
+    words = await db.execute('SELECT * FROM "public"."chatting_words" WHERE server_id = $1 AND type = $2', int(message.guild.id), str(type))
     return (words)
 
 async def setAnswers(type, message):
-    answers = await db.execute('SELECT * FROM chatting_answers WHERE server_id = $1 AND type = $2', int(message.guild.id), str(type))
+    answers = await db.execute('SELECT * FROM "public"."chatting_answers" WHERE server_id = $1 AND type = $2', int(message.guild.id), str(type))
     return (answers)    
 
 async def getData(ctx):
@@ -190,7 +190,7 @@ async def bot_run():
     @has_permissions(administrator=True)
     async def updatePrefix(ctx, newPrefix):
 
-        await db.execute('UPDATE settings SET bot_prefix = $1 WHERE server_id = $2', newPrefix, ctx.guild.id)
+        await db.execute('UPDATE "public"."settings" SET bot_prefix = $1 WHERE server_id = $2', newPrefix, ctx.guild.id)
         await getData(ctx)
 
         await ctx.send('Se ha actualizado el prefijo, ahora es **' + settings[0]['bot_prefix'] + '**, puedes cambiarlo con `' + settings[0]['bot_prefix'] + 'updatePrefix <prefix>`')
@@ -204,7 +204,7 @@ async def bot_run():
     @has_permissions(administrator=True)
     async def addWord(ctx, list, word):
 
-        await db.execute('INSERT INTO "chatting_words"("server_id", "type", "word") VALUES($1, $2, $3)', ctx.guild.id, list, word)
+        await db.execute('INSERT INTO "public"."chatting_words"("server_id", "type", "word") VALUES($1, $2, $3)', ctx.guild.id, list, word)
         await getData(ctx)
 
         await ctx.send('Se ha añadido la palabra **' + word + '** a la lista **' + list + '**.')
@@ -219,7 +219,7 @@ async def bot_run():
     async def addAnswer(ctx, list, *answer):
         s_answer = " ".join(answer)
 
-        await db.execute('INSERT INTO "chatting_answers"("server_id", "type", "answer") VALUES($1, $2, $3)', ctx.guild.id, list, s_answer)
+        await db.execute('INSERT INTO "public"."chatting_answers"("server_id", "type", "answer") VALUES($1, $2, $3)', ctx.guild.id, list, s_answer)
         await getData(ctx)
 
         await ctx.send('Se ha añadido la frase **' + s_answer + '** a la lista **' + list + '**.')
@@ -233,7 +233,7 @@ async def bot_run():
     @has_permissions(administrator=True)
     async def deleteWord(ctx, list, word):
 
-        await db.execute('DELETE FROM chatting_words WHERE server_id = $1 AND type = $2 AND id = $3', ctx.guild.id, list, int(word))
+        await db.execute('DELETE FROM "public"."chatting_words" WHERE server_id = $1 AND type = $2 AND id = $3', ctx.guild.id, list, int(word))
         await getData(ctx)
 
         await ctx.send('Se ha eliminado la palabra **#' + word + '** de la lista **' + list + '**.')
@@ -247,7 +247,7 @@ async def bot_run():
     @has_permissions(administrator=True)
     async def deleteAnswer(ctx, list, answer): # hacerlo por ID si posible
         
-        await db.execute('DELETE FROM chatting_answers WHERE server_id = $1 AND type = $2 AND id = $3', ctx.guild.id, list, int(answer))
+        await db.execute('DELETE FROM "public"."chatting_answers" WHERE server_id = $1 AND type = $2 AND id = $3', ctx.guild.id, list, int(answer))
         await getData(ctx)
 
         await ctx.send('Se ha eliminado la frase **#' + answer + '** de la lista **' + list + '**.')
