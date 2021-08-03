@@ -3,5 +3,4 @@ asyncio==3.4.3
 asyncpg==0.23.0
 discord==1.0.1
 discord.py==1.6.0
-python-apt==2.0.0+ubuntu0.20.4.5
 python-dotenv==0.15.0
