@@ -9,11 +9,11 @@ import random
 import asyncio
 import asyncpg
 
-credentials = {"user": config('DB_USER'), "password": config('DB_PASS'), "database": config('DB_NAME'), "host": config('DB_HOST')}
+credentials = {"user": config('DB_USER'), "password": config('DB_PASS'), "database": config('DB_NAME'), "host": config('DB_HOST'), }
 
 async def connDB():
     global db
-    db = await asyncpg.create_pool(**credentials)
+    db = await asyncpg.create_pool(**credentials, ssl=True)
     #await getData()
     return (db)
 
