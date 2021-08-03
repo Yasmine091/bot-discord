@@ -127,7 +127,7 @@ async def bot_run():
             await message.channel.send('¡Hola!')
 
         if any(word in msg for word in sing_wl):
-            await message.channel.send('¡PRRRIIIIIIIII PIPIPIPI PIO PIO PIO PIO PI PI PI, PIIII PIIII PIIII!')
+            await message.channel.send(random.choice(sing_al))
         
         if any(word in msg for word in sad_wl):
             await message.channel.send(random.choice(sad_al))
