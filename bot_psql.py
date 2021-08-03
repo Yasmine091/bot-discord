@@ -8,7 +8,6 @@ from decouple import config
 import random
 import json
 import functions
-
 import asyncio
 import asyncpg
 
@@ -22,12 +21,28 @@ async def connDB():
 
 async def getWords(type, message):
     words = await db.fetch('SELECT * FROM chatting_words WHERE server_id = $1 AND type = $2', int(message.guild.id), str(type))
-    print(words)
+    #print(words)
     return (words)
 
 async def getAnswers(type, message):
     answers = await db.fetch('SELECT * FROM chatting_answers WHERE server_id = $1 AND type = $2', int(message.guild.id), str(type))
-    print(answers)
+    #print(answers)
+    return (answers)
+
+async def formatWords(type, message):
+    words = []
+    r_words = await db.fetch('SELECT * FROM chatting_words WHERE server_id = $1 AND type = $2', int(message.guild.id), str(type))
+    for word in r_words:
+        words.append(word['word'])
+    #print(words)
+    return (words)
+
+async def formatAnswers(type, message):
+    answers = []
+    r_answers = await db.fetch('SELECT * FROM chatting_answers WHERE server_id = $1 AND type = $2', int(message.guild.id), str(type))
+    for answer in r_answers:
+        answers.append(answer['answer'])
+    #print(answers)
     return (answers)
 
 async def getSettings(message):
@@ -48,24 +63,33 @@ async def setAnswers(type, message):
     return (answers)    
 
 async def getData(ctx):
-    global sad_w, happy_w, sing_w, sad_a, happy_a, sing_a, settings
+    global sad_w, happy_w, sing_w, sad_wl, happy_wl, sing_wl, sad_a, happy_a, sing_a, sad_al, happy_al, sing_al, settings
+
     sad_w = await getWords('sad', ctx)
     happy_w = await getWords('happy', ctx)
     sing_w = await getWords('sing', ctx)
+
+    sad_wl = await formatWords('sad', ctx)
+    happy_wl = await formatWords('happy', ctx)
+    sing_wl = await formatWords('sing', ctx)
+
     sad_a = await getAnswers('sad', ctx)
     happy_a = await getAnswers('happy', ctx)
     sing_a = await getAnswers('sing', ctx)
+
+    sad_al = await formatAnswers('sad', ctx)
+    happy_al = await formatAnswers('happy', ctx)
+    sing_al = await formatAnswers('sing', ctx)
+
     settings = await getSettings(ctx)
-    return (sad_w, happy_w, sing_w, sad_a, happy_a, sing_a, settings)
-
-#words = data['chatting_words']
-#answers = data['chatting_answers']
-
-#sing = ['canta', 'cantar', 'canta!', 'cantar!']
+    return (sad_w, happy_w, sing_w, sad_wl, happy_wl, sing_wl, sad_a, happy_a, sing_a, sad_al, happy_al, sing_al, settings)
 
 notAllowed = 'No tienes permiso para usar ese comando.'
 
-client = commands.Bot(command_prefix = '!')
+intents = discord.Intents.default()
+intents.members = True
+
+client = commands.Bot(command_prefix = '!', intents=intents)
 
 @client.event
 async def on_ready():
@@ -75,19 +99,16 @@ async def on_ready():
 
 async def bot_run():
     await connDB()
-    
-    @client.event
-    async def on_ready():
-        print('Hola, soy {0.user}'.format(client))
 
     @client.event
     async def on_message(message):
-
+        await getData(message)
+        
         try:
             settings
         except NameError:
-            print("Settings missing!")
             await getData(message)
+            print("Settings missing!")
             print('Settings loaded!')
 
         usr = message.author
@@ -100,36 +121,54 @@ async def bot_run():
 
         if message.content.startswith('hola'):
             await message.channel.send('¡Hola!')
-        
-        if any(word in msg for word in sing_w):
+
+        if any(word in msg for word in sing_wl):
             await message.channel.send('¡PRRRIIIIIIIII PIPIPIPI PIO PIO PIO PIO PI PI PI, PIIII PIIII PIIII!')
         
-        if any(word in msg for word in sad_w['words']):
-            await message.channel.send(random.choice(sad_a['answers']))
+        if any(word in msg for word in sad_wl):
+            await message.channel.send(random.choice(sad_al))
 
-        if any(word in msg for word in happy_w['words']):
-            await message.channel.send(random.choice(happy_a['answers']))
+        if any(word in msg for word in happy_wl):
+            await message.channel.send(random.choice(happy_al))
 
         await client.process_commands(message)
 
 
+    @client.event
+    async def on_member_join(member):
+        print(f"{member.name} se ha unido al servidor")
+        # channel = await client.get_channel(871758974456844338)
+        # channel.send(f"Bienvenid@ {member.name} a la cueva de patos :D")
+
+        embedVar = discord.Embed(color=0x12d600, description=f"Bienvenid@ {member.mention}, eres el patito #{len(list(member.guild.members))}!")
+        embedVar.set_footer(text=f"{member.guild}", icon_url=f"{member.guild.icon_url}")
+        embedVar.set_image(url=f"{member.avatar_url}")
+        #embedVar.timestamp = datetime.datetime.utcnow()
+        
+        channel = client.get_channel(871758974456844338)
+        await channel.send(embed=embedVar)
+
+
+    @client.event
+    async def on_member_remove(member):
+        print(f"{member.name} ha abandonado el servidor")
+
     @client.command()
     @has_permissions(administrator=True)
-    async def commands(ctx):
+    async def cmd(ctx):     
         embedVar = discord.Embed(title="Lista de comandos", description="Lista de comandos de **{0.user}".format(client) + "**", color=0xfde435)
         embedVar.add_field(name='\u200B', value='\u200B', inline=False)
         embedVar.add_field(name=settings['prefix'] + 'currentPrefix', value='Ver el prefijo actual', inline=True)
         embedVar.add_field(name=settings['prefix'] + 'updatePrefix <prefix>', value='Cambiar el prefijo actual', inline=True)
         embedVar.add_field(name=settings['prefix'] + 'addWord <list> <word>', value='Añadir palabras a una lista', inline=True)
         embedVar.add_field(name=settings['prefix'] + 'addAnswer <list> <answer>', value='Añadir frases a una lista', inline=True)
-        embedVar.add_field(name=settings['prefix'] + 'deleteWord <list> <word>', value='Eliminar palabras de una lista', inline=True)
-        embedVar.add_field(name=settings['prefix'] + 'deleteAnswer <list> <answer>', value='Eliminar frases de una lista', inline=True)
+        embedVar.add_field(name=settings['prefix'] + 'deleteWord <list> <number>', value='Eliminar palabras de una lista', inline=True)
+        embedVar.add_field(name=settings['prefix'] + 'deleteAnswer <list> <number>', value='Eliminar frases de una lista', inline=True)
         embedVar.add_field(name=settings['prefix'] + 'words <list>', value='Ver la lista completa de palabras', inline=True)
         embedVar.add_field(name=settings['prefix'] + 'answers <list>', value='Ver la lista completa de frases', inline=True)
-        
         await ctx.send(embed=embedVar)
 
-    @commands.error
+    @cmd.error
     async def noAdmin(ctx, error):
         if isinstance(error, MissingPermissions):
             await ctx.send(notAllowed)
@@ -138,7 +177,7 @@ async def bot_run():
     @client.command()
     @has_permissions(administrator=True)
     async def currentPrefix(ctx):
-        await ctx.send('El prefijo actual es **' + settings['prefix'] + '**, puedes cambiarlo con `' + settings['prefix'] + 'updatePrefix <prefix>`')
+        await ctx.send('El prefijo actual es **' + settings[0]['bot_prefix'] + '**, puedes cambiarlo con `' + settings[0]['bot_prefix'] + 'updatePrefix <prefix>`')
 
     @currentPrefix.error
     async def noAdmin(ctx, error):
@@ -175,12 +214,13 @@ async def bot_run():
 
     @client.command()
     @has_permissions(administrator=True)
-    async def addAnswer(ctx, list, answer):
+    async def addAnswer(ctx, list, *answer):
+        s_answer = " ".join(answer)
 
-        await db.execute('INSERT INTO "chatting_answers"("server_id", "type", "word") VALUES($1, $2, $3)', ctx.guild.id, list, answer)
+        await db.execute('INSERT INTO "chatting_answers"("server_id", "type", "answer") VALUES($1, $2, $3)', ctx.guild.id, list, s_answer)
         await getData(ctx)
 
-        await ctx.send('Se ha añadido la frase **' + answer + '** a la lista **' + list + '**.')
+        await ctx.send('Se ha añadido la frase **' + s_answer + '** a la lista **' + list + '**.')
 
     @addAnswer.error
     async def noAdmin(ctx, error):
@@ -191,12 +231,10 @@ async def bot_run():
     @has_permissions(administrator=True)
     async def deleteWord(ctx, list, word):
 
-        data['chatting'][list][0]['words'].remove(word)
+        await db.execute('DELETE FROM chatting_words WHERE server_id = $1 AND type = $2 AND id = $3', ctx.guild.id, list, int(word))
+        await getData(ctx)
 
-        with open("assets/api.json", 'w') as wf:
-            json.dump(data, wf, indent=3)
-
-        await ctx.send('Se ha eliminado la palabra **' + word + '** de la lista **' + list + '**.')
+        await ctx.send('Se ha eliminado la palabra **#' + word + '** de la lista **' + list + '**.')
 
     @deleteWord.error
     async def noAdmin(ctx, error):
@@ -205,14 +243,12 @@ async def bot_run():
 
     @client.command()
     @has_permissions(administrator=True)
-    async def deleteAnswer(ctx, list, answer):
+    async def deleteAnswer(ctx, list, answer): # hacerlo por ID si posible
+        
+        await db.execute('DELETE FROM chatting_answers WHERE server_id = $1 AND type = $2 AND id = $3', ctx.guild.id, list, int(answer))
+        await getData(ctx)
 
-        data['chatting'][list][0]['answers'].remove(answer)
-
-        with open("assets/api.json", 'w') as wf:
-            json.dump(data, wf, indent=3)
-
-        await ctx.send('Se ha eliminado la frase **' + answer + '** de la lista **' + list + '**.')
+        await ctx.send('Se ha eliminado la frase **#' + answer + '** de la lista **' + list + '**.')
 
     @deleteAnswer.error
     async def noAdmin(ctx, error):
@@ -224,9 +260,16 @@ async def bot_run():
     async def words(ctx, list):
         embedVar = discord.Embed(title="Diccionario **" + list + "**", description="\u200B", color=0xfde435)
 
+        if(list == 'sad'):
+            data = sad_w
+        if(list == 'happy'):
+            data = happy_w
+        if(list == 'sing'):
+            data = sing_w
+
         i = 1;
-        for word in data['chatting'][list][0]['words']:
-            embedVar.add_field(name='Palabra #{}'.format(i), value=word, inline=True)
+        for word in data:
+            embedVar.add_field(name='Palabra #{}'.format(word['id']), value=word['word'], inline=True)
             i = i + 1;
 
         await ctx.send(embed=embedVar)
@@ -241,9 +284,18 @@ async def bot_run():
     async def answers(ctx, list):
         embedVar = discord.Embed(title="Repertorio **" + list + "**", description="\u200B", color=0xfde435)
 
+
+        if(list == 'sad'):
+            data = sad_a
+        if(list == 'happy'):
+            data = happy_a
+        if(list == 'sing'):
+            data = sing_a
+
+
         i = 1;
-        for answer in data['chatting'][list][0]['answers']:
-            embedVar.add_field(name='Frase #{}'.format(i), value=answer, inline=False)
+        for answer in data:
+            embedVar.add_field(name='Frase #{}'.format(answer['id']), value=answer['answer'], inline=False)
             i = i + 1;
 
         await ctx.send(embed=embedVar)
