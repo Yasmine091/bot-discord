@@ -10,7 +10,7 @@ import asyncio
 import asyncpg
 import ssl
 
-credentials = {"user": config('DB_USER'), "password": config('DB_PASS'), "database": config('DB_NAME'), "host": config('DB_HOST'), }
+credentials = {"user": config('DB_USER'), "password": config('DB_PASS'), "database": config('DB_NAME'), "host": config('DB_HOST')}
 
 async def connDB():
     global db
