@@ -6,8 +6,6 @@ from discord.utils import get
 from discord import NotFound
 from decouple import config
 import random
-import json
-import functions
 import asyncio
 import asyncpg
 
