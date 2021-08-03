@@ -8,12 +8,16 @@ from decouple import config
 import random
 import asyncio
 import asyncpg
+import ssl
 
 credentials = {"user": config('DB_USER'), "password": config('DB_PASS'), "database": config('DB_NAME'), "host": config('DB_HOST'), }
 
 async def connDB():
     global db
-    db = await asyncpg.create_pool(**credentials, ssl=True)
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    db = await asyncpg.create_pool(**credentials, ssl=ctx)
     #await getData()
     return (db)
 
