@@ -104,7 +104,6 @@ async def bot_run():
 
     @client.event
     async def on_message(message):
-        await getData(message)
         
         try:
             settings
