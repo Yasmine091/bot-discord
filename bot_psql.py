@@ -49,6 +49,7 @@ async def formatAnswers(type, message):
 
 async def getSettings(message):
     settings = await db.fetch('SELECT * FROM "public"."settings" WHERE server_id = $1', message.guild.id)
+    print(settings)
     if(settings == 'SELECT 0'):
         await db.execute('INSERT INTO "public"."settings" (server_id) VALUES ($1)', message.guild.id)
         settings = await db.fetch('SELECT * FROM "public"."settings" WHERE server_id = $1', message.guild.id)
