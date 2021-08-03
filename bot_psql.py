@@ -54,6 +54,7 @@ async def getSettings(message):
         await db.execute('INSERT INTO settings (server_id) VALUES ($1)', message.guild.id)
         settings = await db.fetch('SELECT * FROM "public"."settings" WHERE server_id = $1', message.guild.id)
         client.command_prefix = settings[0]['bot_prefix']
+    print(settings)
     return (settings)
 
 async def setWords(type, message):
