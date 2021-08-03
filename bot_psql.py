@@ -109,8 +109,8 @@ async def bot_run():
         try:
             settings
         except NameError:
-            await getData(message)
             print("Settings missing!")
+            await getData(message)
             print('Settings loaded!')
 
         usr = message.author
